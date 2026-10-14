@@ -13,15 +13,19 @@ zstd: error 31 : Stat failed on dictionary file C:\Users\runneradmin\AppData\Loc
 [FTL] Delta creation failed for one or more files. See log for details. To skip delta generation, use the '--delta none' argument.
 ```
 
-The runner reports `ANSI code page: 1252` / `System locale: en-US`.
+Which non-ASCII characters fail depends on the environment. The same Japanese title passes on Windows 11 with a Japanese system locale, where a Korean file name fails instead:
 
-The same commands succeed on Windows 11 with a Japanese system locale (`ANSI code page: 932`).
+| Environment                  | Japanese name (`テストアプリ`) | Korean name (`테스트`) | ASCII name |
+| ---------------------------- | ------------------------------ | ---------------------- | ---------- |
+| GitHub-hosted runner (en-US) | ❌ fails                        | not tested             | ✅          |
+| Windows 11 (ja-JP)           | ✅                              | ❌ fails                | ✅          |
 
 ## What is known
 
 - Since [#982](https://github.com/velopack/velopack/issues/982), the launcher stub in the package is named after `--packTitle` (`<packTitle>_ExecutionStub.exe`); vpk 1.2.0 named it after `--mainExe` (`ReproApp_ExecutionStub.exe`), which it diffs with `zstd.exe` without error.
 - When both the previous and the new release contain that stub, vpk diffs it with its bundled `zstd.exe`.
-- vpk logs the correct path in the `zstd.exe` command line, but zstd's error shows each Japanese character as `?` and reports that the file does not exist. Where the characters are lost has not been determined.
+- vpk logs the correct path in the `zstd.exe` command line, but zstd's error shows the non-ASCII characters as `?` and reports that the file does not exist.
+- Running the bundled `zstd.exe` directly, without vpk, on files with non-ASCII names fails the same way, so `zstd.exe` does not seem to handle non-ASCII characters in paths reliably. Where the characters are lost has not been determined.
 
 ## Reproduce
 
