@@ -1,6 +1,6 @@
 # velopack-nonascii-delta-repro
 
-Minimal reproduction: `vpk pack` fails to build a delta package when `--packTitle` contains characters that the machine's ANSI code page cannot represent (e.g. Japanese on a GitHub-hosted `windows-latest` runner, code page 1252).
+Minimal reproduction: on a GitHub-hosted `windows-latest` runner, `vpk pack` fails to build a delta package when `--packTitle` contains non-ASCII characters (Japanese here).
 
 ## Symptom
 
@@ -15,13 +15,13 @@ zstd: error 31 : Stat failed on dictionary file C:\Users\runneradmin\AppData\Loc
 
 The runner reports `ANSI code page: 1252` / `System locale: en-US`.
 
-The same commands succeed on a machine whose system code page can encode the title (e.g. Windows with a Japanese system locale, code page 932).
+The same commands succeed on Windows 11 with a Japanese system locale (`ANSI code page: 932`).
 
-## Cause (as observed)
+## What is known
 
 - Since [#982](https://github.com/velopack/velopack/issues/982), the launcher stub in the package is named after `--packTitle` (`<packTitle>_ExecutionStub.exe`); vpk 1.2.0 named it after `--mainExe` (`ReproApp_ExecutionStub.exe`), which it diffs with `zstd.exe` without error.
 - When both the previous and the new release contain that stub, vpk diffs it with its bundled `zstd.exe`.
-- The path reaches `zstd.exe` through the ANSI code page, so unrepresentable characters become `?` and the file cannot be opened.
+- vpk logs the correct path in the `zstd.exe` command line, but zstd's error shows each Japanese character as `?` and reports that the file does not exist. Where the characters are lost has not been determined.
 
 ## Reproduce
 
