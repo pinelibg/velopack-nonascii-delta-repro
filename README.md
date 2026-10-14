@@ -7,16 +7,19 @@ Minimal reproduction: `vpk pack` fails to build a delta package when `--packTitl
 Packing the second release fails while creating the delta:
 
 ```
-[ERR] Failed to create zstd diff for file '...\lib\app\テストアプリ_ExecutionStub.exe'.
-zstd: error 31 : Stat failed on dictionary file ...\lib\app\??????(???)_ExecutionStub.exe: No such file or directory
+[ERR] Failed to create zstd diff for file 'C:\Users\runneradmin\AppData\Local\Temp\velopack\temp.3\lib\app\テストアプリ_ExecutionStub.exe'.
+Process failed: '...\vpk\1.2.161\vendor\zstd.exe --patch-from ...\temp.2\lib\app\テストアプリ_ExecutionStub.exe -o ...\temp.3\lib\app\テストアプリ_ExecutionStub.exe.zsdiff --force --single-thread ...\temp.3\lib\app\テストアプリ_ExecutionStub.exe'
+zstd: error 31 : Stat failed on dictionary file C:\Users\runneradmin\AppData\Local\Temp\velopack\temp.2\lib\app\??????_ExecutionStub.exe: No such file or directory
 [FTL] Delta creation failed for one or more files. See log for details. To skip delta generation, use the '--delta none' argument.
 ```
+
+The runner reports `ANSI code page: 1252` / `System locale: en-US`.
 
 The same commands succeed on a machine whose system code page can encode the title (e.g. Windows with a Japanese system locale, code page 932).
 
 ## Cause (as observed)
 
-- Since [#982](https://github.com/velopack/velopack/issues/982), the launcher stub in the package is named after `--packTitle` (`<packTitle>_ExecutionStub.exe`); vpk 1.2.0 named it after `--mainExe`.
+- Since [#982](https://github.com/velopack/velopack/issues/982), the launcher stub in the package is named after `--packTitle` (`<packTitle>_ExecutionStub.exe`); vpk 1.2.0 named it after `--mainExe` (`ReproApp_ExecutionStub.exe`), which it diffs with `zstd.exe` without error.
 - When both the previous and the new release contain that stub, vpk diffs it with its bundled `zstd.exe`.
 - The path reaches `zstd.exe` through the ANSI code page, so unrepresentable characters become `?` and the file cannot be opened.
 
