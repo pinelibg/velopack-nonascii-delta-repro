@@ -1,0 +1,70 @@
+name: Reproduce non-ASCII delta failure
+
+on:
+  workflow_dispatch:
+
+jobs:
+  pack:
+    name: ${{ matrix.name }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "non-ASCII packTitle -> fails"
+            vpk: "1.2.161"
+            title: "テストアプリ"
+            delta: ""
+          - name: "ASCII packTitle -> passes"
+            vpk: "1.2.161"
+            title: "Test App"
+            delta: ""
+          - name: "non-ASCII packTitle, --delta none -> passes"
+            vpk: "1.2.161"
+            title: "テストアプリ"
+            delta: "none"
+          - name: "non-ASCII packTitle, vpk 1.2.0 -> passes"
+            vpk: "1.2.0"
+            title: "テストアプリ"
+            delta: ""
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      PACK_TITLE: ${{ matrix.title }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Show runner code page
+        run: |
+          "ANSI code page: $([Globalization.CultureInfo]::CurrentCulture.TextInfo.ANSICodePage)"
+          "System locale:  $((Get-WinSystemLocale).Name)"
+
+      - name: Install vpk
+        run: dotnet tool install -g vpk --version ${{ matrix.vpk }}
+
+      - name: Pack 1.0.0
+        run: |
+          dotnet publish ReproApp -c Release -r win-x64 --self-contained false -o publish/1.0.0 -p:Version=1.0.0
+          vpk pack -u ReproApp -v 1.0.0 -p publish/1.0.0 --packTitle $env:PACK_TITLE --mainExe ReproApp.exe --noPortable
+
+      - name: Pack 1.0.1 (builds the delta)
+        run: |
+          dotnet publish ReproApp -c Release -r win-x64 --self-contained false -o publish/1.0.1 -p:Version=1.0.1
+          $deltaArgs = if ('${{ matrix.delta }}') { @('--delta', '${{ matrix.delta }}') } else { @() }
+          vpk pack -u ReproApp -v 1.0.1 -p publish/1.0.1 --packTitle $env:PACK_TITLE --mainExe ReproApp.exe --noPortable @deltaArgs
+
+      - name: List package contents
+        if: always()
+        run: |
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          Get-ChildItem Releases -Filter *.nupkg | ForEach-Object {
+            "== $($_.Name)"
+            $zip = [IO.Compression.ZipFile]::OpenRead($_.FullName)
+            $zip.Entries | Where-Object FullName -Like 'lib/app/*' | ForEach-Object { "  $($_.FullName) ($($_.Length))" }
+            $zip.Dispose()
+          }
