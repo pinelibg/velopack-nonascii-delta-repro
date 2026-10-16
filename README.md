@@ -13,12 +13,25 @@ zstd: error 31 : Stat failed on dictionary file C:\Users\runneradmin\AppData\Loc
 [FTL] Delta creation failed for one or more files. See log for details. To skip delta generation, use the '--delta none' argument.
 ```
 
-Which non-ASCII characters fail depends on the environment. The same Japanese title passes on Windows 11 with a Japanese system locale, where a Korean file name still fails:
+Which non-ASCII characters fail depends on the environment. For example, the Japanese title passes on Windows 11 with a Japanese system locale, while `café` passes on the hosted runner:
 
-| Environment                  | Japanese name (`テストアプリ`) | Korean name (`테스트`) | ASCII name |
-| ---------------------------- | ------------------------------ | ---------------------- | ---------- |
-| GitHub-hosted runner (en-US) | ❌ fails                        | ❌ fails                | ✅          |
-| Windows 11 (ja-JP)           | ✅                              | ❌ fails                | ✅          |
+| Script           | Name          | GitHub-hosted runner (en-US) | Windows 11 (ja-JP) |
+| ---------------- | ------------- | ---------------------------- | ------------------ |
+| ASCII            | `ascii_test`  | ✅                            | ✅                  |
+| Japanese         | `テストアプリ` | ❌ fails                      | ✅                  |
+| Korean           | `테스트`       | ❌ fails                      | ❌ fails            |
+| Latin (French)   | `café`        | ✅                            | ❌ fails            |
+| Latin (German)   | `Größe`       | ✅                            | ❌ fails            |
+| Latin (Polish)   | `Łódź`        | ❌ fails                      | ❌ fails            |
+| Cyrillic         | `Тест`        | ❌ fails                      | ✅                  |
+| Greek            | `Τεστ`        | ❌ fails                      | ✅                  |
+| Arabic           | `اختبار`      | ❌ fails                      | ❌ fails            |
+| Hebrew           | `בדיקה`       | ❌ fails                      | ❌ fails            |
+| Thai             | `ทดสอบ`       | ❌ fails                      | ❌ fails            |
+| Devanagari       | `परीक्षण`     | ❌ fails                      | ❌ fails            |
+| Emoji            | `test😀`      | ❌ fails                      | ❌ fails            |
+
+Every failure is the same `zstd: error 31 : Stat failed on dictionary file`. The runner column comes from `vpk pack` (run the workflow on the [`explore/charsets`](../../tree/explore/charsets) branch). The ja-JP column comes from running the bundled `zstd.exe --patch-from` directly; for Japanese and Korean, `vpk pack` gave the same result there.
 
 ## What is known
 
