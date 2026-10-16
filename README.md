@@ -35,12 +35,9 @@ Every failure is the same `zstd: error 31 : Stat failed on dictionary file`. The
 
 ## When it happens
 
-All of these must be true:
-
-- vpk includes [#985](https://github.com/velopack/velopack/pull/985) (1.2.158 or later). vpk 1.2.0 is not affected.
-- `--packTitle` contains a character that the bundled `zstd.exe` cannot open on that machine. Which characters these are depends on the environment (see the table above).
-- A delta is built (`--delta` is not `none`).
-- The previous release was packed the same way, so it contains a stub with the same name. The first release after upgrading from vpk 1.2.0 still succeeds, because the previous package has no stub under that name.
+- vpk is 1.2.158 or later ([#985](https://github.com/velopack/velopack/pull/985))
+- `--packTitle` is in a non-ASCII language such as Japanese (which characters fail depends on the environment; see the table above)
+- a delta is built against a previous release packed the same way
 
 ## What is known
 
