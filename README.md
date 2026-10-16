@@ -36,7 +36,8 @@ Every failure is the same `zstd: error 31 : Stat failed on dictionary file`. The
 ## When it happens
 
 - vpk is 1.2.158 or later ([#985](https://github.com/velopack/velopack/pull/985))
-- `--packTitle` is in a non-ASCII language such as Japanese (which characters fail depends on the environment; see the table above)
+- `--packTitle` is in a non-ASCII language such as Japanese
+- vpk runs on a Windows locale where those characters fail (e.g. Japanese fails on en-US but passes on ja-JP; see the table above)
 - a delta is built against a previous release packed the same way
 
 ## What is known
