@@ -10,32 +10,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        name: ["ascii_test", "テストアプリ", "테스트", "café", "Größe", "Łódź", "Тест", "Τεστ", "اختبار", "בדיקה", "ทดสอบ", "परीक्षण", "test😀"]
         include:
-          - name: "non-ASCII packTitle -> fails"
-            vpk: "1.2.161"
-            title: "テストアプリ"
-            delta: ""
-          - name: "Korean packTitle -> fails"
-            vpk: "1.2.161"
-            title: "테스트"
-            delta: ""
-          - name: "ASCII packTitle -> passes"
-            vpk: "1.2.161"
-            title: "Test App"
-            delta: ""
-          - name: "non-ASCII packTitle, --delta none -> passes"
-            vpk: "1.2.161"
-            title: "テストアプリ"
-            delta: "none"
-          - name: "non-ASCII packTitle, vpk 1.2.0 -> passes"
-            vpk: "1.2.0"
-            title: "テストアプリ"
+          - vpk: "1.2.161"
             delta: ""
     defaults:
       run:
         shell: pwsh
     env:
-      PACK_TITLE: ${{ matrix.title }}
+      PACK_TITLE: ${{ matrix.name }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
