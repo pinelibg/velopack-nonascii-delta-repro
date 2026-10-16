@@ -15,7 +15,7 @@ jobs:
             vpk: "1.2.161"
             title: "テストアプリ"
             delta: ""
-          - name: "Korean packTitle"
+          - name: "Korean packTitle -> fails"
             vpk: "1.2.161"
             title: "테스트"
             delta: ""
