@@ -1,6 +1,6 @@
 # velopack-nonascii-delta-repro
 
-Minimal reproduction: on a GitHub-hosted `windows-latest` runner, `vpk pack` fails to build a delta package when `--packTitle` contains non-ASCII characters (Japanese here).
+Minimal reproduction: on a GitHub-hosted `windows-latest` runner, `vpk pack` fails to build a delta package when `--packTitle` contains non-ASCII characters (Japanese and Korean here).
 
 ## Symptom
 
@@ -13,16 +13,17 @@ zstd: error 31 : Stat failed on dictionary file C:\Users\runneradmin\AppData\Loc
 [FTL] Delta creation failed for one or more files. See log for details. To skip delta generation, use the '--delta none' argument.
 ```
 
-Which non-ASCII characters fail depends on the environment. The same Japanese title passes on Windows 11 with a Japanese system locale, where a Korean file name fails instead:
+Which non-ASCII characters fail depends on the environment. The same Japanese title passes on Windows 11 with a Japanese system locale, where a Korean file name still fails:
 
 | Environment                  | Japanese name (`テストアプリ`) | Korean name (`테스트`) | ASCII name |
 | ---------------------------- | ------------------------------ | ---------------------- | ---------- |
-| GitHub-hosted runner (en-US) | ❌ fails                        | not tested             | ✅          |
+| GitHub-hosted runner (en-US) | ❌ fails                        | ❌ fails                | ✅          |
 | Windows 11 (ja-JP)           | ✅                              | ❌ fails                | ✅          |
 
 ## What is known
 
-- Since [#982](https://github.com/velopack/velopack/issues/982), the launcher stub in the package is named after `--packTitle` (`<packTitle>_ExecutionStub.exe`); vpk 1.2.0 named it after `--mainExe` (`ReproApp_ExecutionStub.exe`), which it diffs with `zstd.exe` without error.
+- Since [#985](https://github.com/velopack/velopack/pull/985) (the fix for [#982](https://github.com/velopack/velopack/issues/982)), the launcher stub in the package is named after `--packTitle` (`<packTitle>_ExecutionStub.exe`).
+- vpk 1.2.0 named the stub after `--mainExe` (`ReproApp_ExecutionStub.exe`). With that name, `zstd.exe` builds the diff without error.
 - When both the previous and the new release contain that stub, vpk diffs it with its bundled `zstd.exe`.
 - vpk logs the correct path in the `zstd.exe` command line, but zstd's error shows the non-ASCII characters as `?` and reports that the file does not exist.
 - Running the bundled `zstd.exe` directly, without vpk, on files with non-ASCII names fails the same way, so `zstd.exe` does not seem to handle non-ASCII characters in paths reliably.
@@ -37,6 +38,7 @@ Each job packs `1.0.0` and then `1.0.1` (which builds the delta). The job result
 | Job | vpk | `--packTitle` | `--delta` | Result |
 |---|---|---|---|---|
 | non-ASCII packTitle | 1.2.161 | `テストアプリ` | default | ❌ fails |
+| Korean packTitle | 1.2.161 | `테스트` | default | ❌ fails |
 | ASCII packTitle | 1.2.161 | `Test App` | default | ✅ passes |
 | non-ASCII packTitle, `--delta none` | 1.2.161 | `テストアプリ` | `none` | ✅ passes |
 | non-ASCII packTitle, vpk 1.2.0 | 1.2.0 | `テストアプリ` | default | ✅ passes |
