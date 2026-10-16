@@ -33,6 +33,15 @@ Which non-ASCII characters fail depends on the environment. For example, the Jap
 
 Every failure is the same `zstd: error 31 : Stat failed on dictionary file`. The runner column comes from `vpk pack` (run the workflow on the [`explore/charsets`](../../tree/explore/charsets) branch). The ja-JP column comes from running the bundled `zstd.exe --patch-from` directly; for Japanese and Korean, `vpk pack` gave the same result there.
 
+## When it happens
+
+All of these must be true:
+
+- vpk includes [#985](https://github.com/velopack/velopack/pull/985) (1.2.158 or later). vpk 1.2.0 is not affected.
+- `--packTitle` contains a character that the bundled `zstd.exe` cannot open on that machine. Which characters these are depends on the environment (see the table above).
+- A delta is built (`--delta` is not `none`).
+- The previous release was packed the same way, so it contains a stub with the same name. The first release after upgrading from vpk 1.2.0 still succeeds, because the previous package has no stub under that name.
+
 ## What is known
 
 - Since [#985](https://github.com/velopack/velopack/pull/985) (the fix for [#982](https://github.com/velopack/velopack/issues/982)), the launcher stub in the package is named after `--packTitle` (`<packTitle>_ExecutionStub.exe`).
