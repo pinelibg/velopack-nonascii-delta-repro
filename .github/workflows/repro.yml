@@ -31,6 +31,10 @@ jobs:
             vpk: "1.2.0"
             title: "テストアプリ"
             delta: ""
+          - name: "non-ASCII packTitle, vpk 1.3.39-g8d2844f (fix) -> passes"
+            vpk: "1.3.39-g8d2844f"
+            title: "テストアプリ"
+            delta: ""
     defaults:
       run:
         shell: pwsh
