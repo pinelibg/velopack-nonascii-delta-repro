@@ -2,6 +2,10 @@
 
 Minimal reproduction: on a GitHub-hosted `windows-latest` runner, `vpk pack` fails to build a delta package when `--packTitle` contains non-ASCII characters (Japanese and Korean here).
 
+## Status
+
+Fixed by [velopack#1113](https://github.com/velopack/velopack/pull/1113), which closed [velopack#1105](https://github.com/velopack/velopack/issues/1105). The fix first shipped in vpk `1.3.39-g8d2844f` (prerelease). With it, the Japanese title builds the delta here, and the delta package contains `テストアプリ_ExecutionStub.exe.zsdiff`. This repository is archived.
+
 ## Symptom
 
 Packing the second release fails while creating the delta:
@@ -62,6 +66,7 @@ Each job packs `1.0.0` and then `1.0.1` (which builds the delta). The job result
 | ASCII packTitle | 1.2.161 | `Test App` | default | ✅ passes |
 | non-ASCII packTitle, `--delta none` | 1.2.161 | `テストアプリ` | `none` | ✅ passes |
 | non-ASCII packTitle, vpk 1.2.0 | 1.2.0 | `テストアプリ` | default | ✅ passes |
+| non-ASCII packTitle, vpk 1.3.39-g8d2844f (fix) | 1.3.39-g8d2844f | `テストアプリ` | default | ✅ passes |
 
 ## Workaround
 
